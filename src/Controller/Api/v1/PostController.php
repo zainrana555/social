@@ -47,23 +47,6 @@ class PostController extends AbstractApiController
     }
 
     /**
-     * @Route("/timeline", name="timeline", methods={"GET"})
-     */
-    public function timeline(ManagerRegistry $doctrine, SerializerInterface $serializer): Response
-    {
-        $user = $this->security->getUser(); // null or UserInterface, if logged in
-        if (!$user) {
-            return $this->respond('Couldn\' locate the user', [], 400);
-        }
-
-        // $posts = $doctrine->getRepository(Post::class)->findAll();
-        $posts = $user->getPosts();
-        $posts = $serializer->serialize($posts, 'json', ['groups' => ['normal']]);
-
-        return $this->respond('success', json_decode($posts));
-    }
-
-    /**
      * @Route("/store", name="store", methods={"POST"})
      * 
      * @OA\Parameter(
