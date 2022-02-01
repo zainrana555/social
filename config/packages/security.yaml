@@ -1,4 +1,10 @@
 security:
+    role_hierarchy:
+        ROLE_MODERATOR: ROLE_USER
+        ROLE_EDITOR: ROLE_MODERATOR
+        ROLE_ADMIN: ROLE_EDITOR
+        ROLE_SUPER_ADMIN: [ ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH ]
+
     enable_authenticator_manager: true
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
@@ -40,7 +46,10 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
 
         # or require ROLE_ADMIN or IS_AUTHENTICATED_FULLY for /admin*
-        - { path: '^/api', roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: '^/api/v1/admin/', roles: [ROLE_ADMIN] }
+        - { path: '^/api/v1/', roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: '^/api/auth', roles: [IS_AUTHENTICATED_ANONYMOUSLY] }
+        - { path: '^/api/', roles: [ROLE_USER] }
 
     encoders:
         App\Entity\User:
