@@ -275,15 +275,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return array
-     */
-    public function getFollowingIds(): array
-    {
-        $following = $this->getFollowing();
-        return $following->map(function($obj){return $obj->getId();})->getValues();
-    }
-
-    /**
      * @return Collection|self[]
      */
     public function getFollowing(): Collection

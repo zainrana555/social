@@ -52,7 +52,7 @@ class Post
     }
 
     /**
-     * @Groups("group3")
+     * @Groups("normal")
      */
     public function getUser(): ?User
     {

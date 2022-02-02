@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use OpenApi\Annotations as OA;
 use Nelmio\ApiDocBundle\Annotation\Security as OASecurity;
 use App\Controller\Api\AbstractApiController;
+use App\Dto\Response\Transformer\PostResponseDtoTransformer;
 
 /**
  * @Route("/api/v1/post", name="v1_post_")
@@ -24,13 +25,20 @@ class PostController extends AbstractApiController
      */
     private Security $security;
 
-    public function __construct(Security $security)
+    /**
+     * @var PostResponseDtoTransformer
+     */
+    private PostResponseDtoTransformer $postResponseDtoTransformer;
+
+    public function __construct(Security $security, PostResponseDtoTransformer $postResponseDtoTransformer)
     {
        $this->security = $security;
+       $this->postResponseDtoTransformer = $postResponseDtoTransformer;
     }
 
     /**
      * @Route("/", name="index", methods={"GET"})
+     * @OA\Tag(name="post")
      */
     public function index(ManagerRegistry $doctrine, SerializerInterface $serializer): Response
     {
@@ -41,9 +49,10 @@ class PostController extends AbstractApiController
 
         // $posts = $doctrine->getRepository(Post::class)->findAll();
         $posts = $user->getPosts();
-        $posts = $serializer->serialize($posts, 'json', ['groups' => ['normal']]);
+//        $posts = $serializer->serialize($posts, 'json', ['groups' => ['normal']]);
+        $dto = $this->postResponseDtoTransformer->transformFromObjects($posts);
 
-        return $this->respond('success', json_decode($posts));
+        return $this->respond('success', $dto);
     }
 
     /**
@@ -51,11 +60,12 @@ class PostController extends AbstractApiController
      * 
      * @OA\Parameter(
      *     name="message",
-     *     in="header",
+     *     in="query",
      *     description="The post message",
-     *     required=true,
+     *     required=false,
      *     @OA\Schema(type="text")
      * )
+     * @OA\Tag(name="post")
      */
     public function store(ManagerRegistry $doctrine, SerializerInterface $serializer, Request $request): Response
     {
@@ -78,19 +88,71 @@ class PostController extends AbstractApiController
         $entityManager->persist($post);
         $entityManager->flush();
 
-        return $this->respond('success');
+        $dto = $this->postResponseDtoTransformer->transformFromObject($post);
+
+        return $this->respond('success', $dto);
     }
 
     /**
      * @Route("/show/{id}", name="show", methods={"GET"})
+     * @OA\Tag(name="post")
      */
     public function show(Post $post,ManagerRegistry $doctrine, SerializerInterface $serializer): Response
     {
         // check for "view" access: calls all voters
         $this->denyAccessUnlessGranted('view', $post);
 
-        $post = $serializer->serialize($post, 'json', ['groups' => ['normal']]);
+//        $post = $serializer->serialize($post, 'json', ['groups' => ['normal']]);
+        $dto = $this->postResponseDtoTransformer->transformFromObject($post);
 
-        return $this->respond('success', json_decode($post));
+        return $this->respond('success', $dto);
+    }
+
+    /**
+     * @Route("/update/{id}", name="update", methods={"PATCH"})
+     *
+     * @OA\Parameter(
+     *     name="message",
+     *     in="query",
+     *     description="The post message",
+     *     required=false,
+     *     @OA\Schema(type="text")
+     * )
+     * @OA\Tag(name="post")
+     */
+    public function update(Post $post, ManagerRegistry $doctrine, Request $request): Response
+    {
+        if(!$request->get('message')){
+            return $this->respond('Message field is required', [], 400);
+        };
+
+        // check for "view" access: calls all voters
+        $this->denyAccessUnlessGranted('edit', $post);
+
+        $post->setMessage($request->get('message'));
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->persist($post);
+        $entityManager->flush();
+
+        $dto = $this->postResponseDtoTransformer->transformFromObject($post);
+
+        return $this->respond('success', $dto);
+    }
+
+    /**
+     * @Route("/delete/{id}", name="delete", methods={"DELETE"})
+     * @OA\Tag(name="post")
+     */
+    public function delete(Post $post, ManagerRegistry $doctrine): Response
+    {
+        // check for "view" access: calls all voters
+        $this->denyAccessUnlessGranted('edit', $post);
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->remove($post);
+        $entityManager->flush();
+
+        return $this->respond('success');
     }
 }

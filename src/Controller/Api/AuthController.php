@@ -22,32 +22,33 @@ class AuthController extends AbstractController
      *
      * @OA\Parameter(
      *     name="email",
-     *     in="header",
+     *     in="query",
      *     description="User email",
-     *     required=true,
+     *     required=false,
      *     @OA\Schema(type="email")
      * )
      * @OA\Parameter(
      *     name="password",
-     *     in="header",
+     *     in="query",
      *     description="User password",
-     *     required=true,
+     *     required=false,
      *     @OA\Schema(type="string")
      * )
      * @OA\Parameter(
      *     name="first_name",
-     *     in="header",
+     *     in="query",
      *     description="User first name",
-     *     required=true,
+     *     required=false,
      *     @OA\Schema(type="string")
      * )
      * @OA\Parameter(
      *     name="last_name",
-     *     in="header",
+     *     in="query",
      *     description="User last name",
-     *     required=true,
+     *     required=false,
      *     @OA\Schema(type="string")
      * )
+     * @OA\Tag(name="auth")
      */
     public function register(Request $request, UserPasswordEncoderInterface $encoder): Response
     {
@@ -69,16 +70,17 @@ class AuthController extends AbstractController
      *
      * @OA\Parameter(
      *     name="email",
-     *     in="header",
+     *     in="query",
      *     description="User email",
      *     @OA\Schema(type="email")
      * )
      * @OA\Parameter(
      *     name="password",
-     *     in="header",
+     *     in="query",
      *     description="User password",
      *     @OA\Schema(type="string")
      * )
+     * @OA\Tag(name="auth")
      */
     public function login(Request $request, UserRepository $userRepository, UserPasswordEncoderInterface $encoder): Response
     {
