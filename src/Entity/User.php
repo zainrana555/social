@@ -20,32 +20,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      *
-     * @Groups("normal")
+     * @Groups("admin")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      *
-     * @Groups("normal")
+     * @Groups({"normal", "admin"})
      */
-    private $email;
+    private string $email;
 
     /**
      * @ORM\Column(type="json")
+     *
+     * @Groups("admin")
      */
-    private $roles = [];
+    private array $roles = [];
 
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
      */
-    private $password;
+    private string $password;
 
     /**
      * @ORM\OneToMany(targetEntity=Post::class, mappedBy="user")
      */
-    private $posts;
+    private Collection $posts;
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="friendsWithMe")
@@ -78,19 +80,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=255)
      *
-     * @Groups("normal")
+     * @Groups({"normal", "admin"})
      */
     private $first_name;
 
     /**
      * @ORM\Column(type="string", length=255)
      *
-     * @Groups("normal")
+     * @Groups({"normal", "admin"})
      */
     private $last_name;
 
     /**
      * @ORM\OneToOne(targetEntity=Image::class, cascade={"persist", "remove"})
+     *
+     * @Groups({"normal", "admin"})
      */
     private $dp;
 
@@ -103,17 +107,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->followers = new ArrayCollection();
     }
 
-
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
+    /**
+     * @param string $email
+     * @return $this
+     */
     public function setEmail(string $email): self
     {
         $this->email = $email;
@@ -141,6 +154,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+     *
+     * @return array|string[]
      */
     public function getRoles(): array
     {
@@ -151,6 +166,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array $roles
+     * @return $this
+     */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
@@ -160,12 +179,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see PasswordAuthenticatedUserInterface
+     *
+     * @return string
      */
     public function getPassword(): string
     {
         return $this->password;
     }
 
+    /**
+     * @param string $password
+     * @return $this
+     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
@@ -178,6 +203,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
      *
      * @see UserInterface
+     *
+     * @return string|null
      */
     public function getSalt(): ?string
     {
@@ -201,6 +228,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->posts;
     }
 
+    /**
+     * @param Post $post
+     * @return $this
+     */
     public function addPost(Post $post): self
     {
         if (!$this->posts->contains($post)) {
@@ -211,6 +242,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @param Post $post
+     * @return $this
+     */
     public function removePost(Post $post): self
     {
         if ($this->posts->removeElement($post)) {
@@ -231,6 +266,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->myFriends;
     }
 
+    /**
+     * @param User $myFriend
+     * @return $this
+     */
     public function addMyFriend(self $myFriend): self
     {
         if (!$this->myFriends->contains($myFriend)) {
@@ -240,6 +279,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @param User $myFriend
+     * @return $this
+     */
     public function removeMyFriend(self $myFriend): self
     {
         $this->myFriends->removeElement($myFriend);
@@ -255,6 +298,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->friendsWithMe;
     }
 
+    /**
+     * @param User $friendsWithMe
+     * @return $this
+     */
     public function addFriendsWithMe(self $friendsWithMe): self
     {
         if (!$this->friendsWithMe->contains($friendsWithMe)) {
@@ -265,6 +312,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @param User $friendsWithMe
+     * @return $this
+     */
     public function removeFriendsWithMe(self $friendsWithMe): self
     {
         if ($this->friendsWithMe->removeElement($friendsWithMe)) {
@@ -282,6 +333,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->following;
     }
 
+    /**
+     * @param User $following
+     * @return $this
+     */
     public function addFollowing(self $following): self
     {
         if (!$this->following->contains($following)) {
@@ -291,6 +346,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @param User $following
+     * @return $this
+     */
     public function removeFollowing(self $following): self
     {
         $this->following->removeElement($following);
@@ -306,6 +365,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->followers;
     }
 
+    /**
+     * @param User $follower
+     * @return $this
+     */
     public function addFollower(self $follower): self
     {
         if (!$this->followers->contains($follower)) {
@@ -316,6 +379,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @param User $follower
+     * @return $this
+     */
     public function removeFollower(self $follower): self
     {
         if ($this->followers->removeElement($follower)) {
@@ -325,11 +392,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getFirstName(): ?string
     {
         return $this->first_name;
     }
 
+    /**
+     * @param string $first_name
+     * @return $this
+     */
     public function setFirstName(string $first_name): self
     {
         $this->first_name = $first_name;
@@ -337,11 +411,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getLastName(): ?string
     {
         return $this->last_name;
     }
 
+    /**
+     * @param string $last_name
+     * @return $this
+     */
     public function setLastName(string $last_name): self
     {
         $this->last_name = $last_name;
@@ -349,11 +430,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return Image|null
+     */
     public function getDp(): ?Image
     {
         return $this->dp;
     }
 
+    /**
+     * @param Image|null $dp
+     * @return $this
+     */
     public function setDp(?Image $dp): self
     {
         $this->dp = $dp;

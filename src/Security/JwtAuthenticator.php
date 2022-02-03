@@ -16,16 +16,25 @@ use App\Entity\User;
 
 class JwtAuthenticator extends AbstractGuardAuthenticator
 {
-    private $em;
-    private $params;
+    private EntityManagerInterface $em;
+    private ContainerBagInterface $params;
 
+    /**
+     * @param EntityManagerInterface $em
+     * @param ContainerBagInterface $params
+     */
     public function __construct(EntityManagerInterface $em, ContainerBagInterface $params)
     {
         $this->em = $em;
         $this->params = $params;
     }
 
-    public function start(Request $request, AuthenticationException $authException = null)
+    /**
+     * @param Request $request
+     * @param AuthenticationException|null $authException
+     * @return JsonResponse
+     */
+    public function start(Request $request, AuthenticationException $authException = null): JsonResponse
 	{ 
 	    $data = [ 
 	        'message' => 'Authentication Required'
@@ -33,17 +42,32 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
 	    return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
 	}
 
-	public function supports(Request $request)
+    /**
+     * @param Request $request
+     * @return bool
+     */
+	public function supports(Request $request): bool
 	{
 	    return $request->headers->has('Authorization');
 	}
 
-	public function getCredentials(Request $request)
+    /**
+     * @param Request $request
+     * @return string|null
+     */
+	public function getCredentials(Request $request): string
 	{
 	        return $request->headers->get('Authorization');
 	}
 
-	public function getUser($credentials, UserProviderInterface $userProvider)
+    /**
+     * @param $credentials
+     * @param UserProviderInterface $userProvider
+     * @return User
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+	public function getUser($credentials, UserProviderInterface $userProvider): User
 	{
 	        try {
 	            $credentials = str_replace('Bearer ', '', $credentials);
@@ -62,7 +86,12 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
 	        }
 	}
 
-	public function checkCredentials($credentials, UserInterface $user)
+    /**
+     * @param $credentials
+     * @param UserInterface $user
+     * @return bool
+     */
+	public function checkCredentials($credentials, UserInterface $user): bool
     {
     	// Check credentials - e.g. make sure the password is valid.
         // In case of an API token, no credential check is needed.
@@ -71,19 +100,33 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
         return true;
     }
 
-	public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
+    /**
+     * @param Request $request
+     * @param AuthenticationException $exception
+     * @return JsonResponse
+     */
+	public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
 	{
 	        return new JsonResponse([
 	                'message' => $exception->getMessage()
 	        ], Response::HTTP_UNAUTHORIZED);
 	}
 
+    /**
+     * @param Request $request
+     * @param TokenInterface $token
+     * @param string $providerKey
+     * @return Response|void|null
+     */
 	public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey)
 	{
 	    return;
 	}
 
-	public function supportsRememberMe()
+    /**
+     * @return bool
+     */
+	public function supportsRememberMe(): bool
 	{
 	    return false;
 	}

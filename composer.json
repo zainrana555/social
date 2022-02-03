@@ -24,6 +24,7 @@
         "symfony/flex": "^1.17|^2",
         "symfony/framework-bundle": "5.4.4.*",
         "symfony/maker-bundle": "^1.36",
+        "symfony/mime": "5.4.*",
         "symfony/property-access": "5.4.*",
         "symfony/property-info": "5.4.*",
         "symfony/proxy-manager-bridge": "5.4.*",

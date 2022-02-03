@@ -11,9 +11,11 @@ use App\Entity\Post;
 class PostResponseDtoTransformer extends AbstractResponseDtoTransformer
 {
     private UserResponseDtoTransformer $userResponseDtoTransformer;
+    private ImageResponseDtoTransformer $imageResponseDtoTransformer;
 
-    public function __construct(UserResponseDtoTransformer $userResponseDtoTransformer) {
+    public function __construct(UserResponseDtoTransformer $userResponseDtoTransformer, ImageResponseDtoTransformer $imageResponseDtoTransformer) {
         $this->userResponseDtoTransformer = $userResponseDtoTransformer;
+        $this->imageResponseDtoTransformer = $imageResponseDtoTransformer;
     }
 
     /**
@@ -30,6 +32,7 @@ class PostResponseDtoTransformer extends AbstractResponseDtoTransformer
         $dto = new PostResponseDto();
         $dto->id = $post->getId();
         $dto->message = $post->getMessage();
+        $dto->images = $this->imageResponseDtoTransformer->transformFromObjects($post->getImages());
         $dto->user = $this->userResponseDtoTransformer->transformFromObject($post->getUser());
 
         return $dto;

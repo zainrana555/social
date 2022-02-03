@@ -19,6 +19,11 @@ class PostResponseDto
     public string $message;
 
     /**
+     * @Serialization\Type("array<App\Dto\Response\ImageResponseDto>")
+     */
+    public iterable $images;
+
+    /**
      * @Serialization\Type("App\Dto\Response\UserResponseDto")
      */
     public UserResponseDto $user;
