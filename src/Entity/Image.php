@@ -9,21 +9,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=ImageRepository::class)
  */
-class Image
+class Image extends ParentEntity
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     *
-     * @Groups({"normal", "admin"})
-     */
-    private int $id;
-
     /**
      * @ORM\ManyToOne(targetEntity=Post::class)
      */
-    private $post;
+    private ?Post $post;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -31,14 +22,6 @@ class Image
      * @Groups({"normal", "admin"})
      */
     private string $path;
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * @return Post|null

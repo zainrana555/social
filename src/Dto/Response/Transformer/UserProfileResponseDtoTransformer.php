@@ -33,8 +33,8 @@ class UserProfileResponseDtoTransformer extends AbstractResponseDtoTransformer
         $dto->first_name = $user->getFirstName();
         $dto->last_name = $user->getLastName();
         $dto->email = $user->getEmail();
-        $dto->friendsTotalCount = $user->getMyFriends()->count();
-        $dto->friends = $this->userResponseDtoTransformer->transformFromObjects($user->getMyFriends());
+//        $dto->friendsTotalCount = $user->getFriends()->count();
+//        $dto->friends = $this->userResponseDtoTransformer->transformFromObjects($user->getFriends());
         $dto->followingTotalCount = $user->getFollowing()->count();
         $dto->following = $this->userResponseDtoTransformer->transformFromObjects($user->getFollowing());
         $dto->followersTotalCount = $user->getFollowers()->count();

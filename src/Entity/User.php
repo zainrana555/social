@@ -13,17 +13,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  */
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User extends ParentEntity implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     *
-     * @Groups("admin")
-     */
-    private int $id;
-
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      *
@@ -48,20 +39,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\OneToMany(targetEntity=Post::class, mappedBy="user")
      */
     private Collection $posts;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, inversedBy="friendsWithMe")
-     * @ORM\JoinTable(name="friends",
-     *      joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@ORM\JoinColumn(name="friend_user_id", referencedColumnName="id")}
-     *      )
-     */
-    private $myFriends;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=User::class, mappedBy="myFriends")
-     */
-    private $friendsWithMe;
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="followers")
@@ -98,21 +75,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $dp;
 
-    public function __construct()
-    {
-        $this->posts = new ArrayCollection();
-        $this->myFriends = new ArrayCollection();
-        $this->friendsWithMe = new ArrayCollection();
-        $this->following = new ArrayCollection();
-        $this->followers = new ArrayCollection();
-    }
+    /**
+     * @ORM\OneToMany(targetEntity=Friend::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $friends;
 
     /**
-     * @return int|null
+     * @ORM\OneToMany(targetEntity=Friend::class, mappedBy="friendUser", orphanRemoval=true)
      */
-    public function getId(): ?int
+    private $friendsWith;
+
+    public function __construct()
     {
-        return $this->id;
+        parent::__construct();
+        $this->posts = new ArrayCollection();
+        $this->following = new ArrayCollection();
+        $this->followers = new ArrayCollection();
+        $this->friends = new ArrayCollection();
+        $this->friendsWith = new ArrayCollection();
     }
 
     /**
@@ -261,73 +241,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection|self[]
      */
-    public function getMyFriends(): Collection
-    {
-        return $this->myFriends;
-    }
-
-    /**
-     * @param User $myFriend
-     * @return $this
-     */
-    public function addMyFriend(self $myFriend): self
-    {
-        if (!$this->myFriends->contains($myFriend)) {
-            $this->myFriends[] = $myFriend;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param User $myFriend
-     * @return $this
-     */
-    public function removeMyFriend(self $myFriend): self
-    {
-        $this->myFriends->removeElement($myFriend);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|self[]
-     */
-    public function getFriendsWithMe(): Collection
-    {
-        return $this->friendsWithMe;
-    }
-
-    /**
-     * @param User $friendsWithMe
-     * @return $this
-     */
-    public function addFriendsWithMe(self $friendsWithMe): self
-    {
-        if (!$this->friendsWithMe->contains($friendsWithMe)) {
-            $this->friendsWithMe[] = $friendsWithMe;
-            $friendsWithMe->addMyFriend($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param User $friendsWithMe
-     * @return $this
-     */
-    public function removeFriendsWithMe(self $friendsWithMe): self
-    {
-        if ($this->friendsWithMe->removeElement($friendsWithMe)) {
-            $friendsWithMe->removeMyFriend($this);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|self[]
-     */
     public function getFollowing(): Collection
     {
         return $this->following;
@@ -445,6 +358,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDp(?Image $dp): self
     {
         $this->dp = $dp;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Friend[]
+     */
+    public function getFriends(): Collection
+    {
+        return $this->friends;
+    }
+
+    public function addFriend(Friend $friend): self
+    {
+        if (!$this->friends->contains($friend)) {
+            $this->friends[] = $friend;
+            $friend->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriend(Friend $friend): self
+    {
+        if ($this->friends->removeElement($friend)) {
+            // set the owning side to null (unless already changed)
+            if ($friend->getUser() === $this) {
+                $friend->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Friend[]
+     */
+    public function getFriendsWith(): Collection
+    {
+        return $this->friendsWith;
+    }
+
+    public function addFriendsWith(Friend $friendsWith): self
+    {
+        if (!$this->friendsWith->contains($friendsWith)) {
+            $this->friendsWith[] = $friendsWith;
+            $friendsWith->setFriendUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFriendsWith(Friend $friendsWith): self
+    {
+        if ($this->friendsWith->removeElement($friendsWith)) {
+            // set the owning side to null (unless already changed)
+            if ($friendsWith->getFriendUser() === $this) {
+                $friendsWith->setFriendUser(null);
+            }
+        }
 
         return $this;
     }

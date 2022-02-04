@@ -3,7 +3,9 @@
 namespace App\Controller\Api\v1;
 
 use App\Entity\User;
+use App\Entity\Friend;
 use App\Entity\Post;
+use App\Repository\FriendRepository;
 use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,7 +63,7 @@ class UserController extends AbstractApiController
     {
         $user = $this->security->getUser(); // null or UserInterface, if logged in
         if (!$user) {
-            return $this->respond('Couldn\' locate the user', [], 400);
+            return $this->respond('Couldn\'t locate the user', [], 400);
         }
 
 //        $user = $serializer->serialize($user, 'json', ['groups' => ['normal']]);
@@ -78,7 +80,7 @@ class UserController extends AbstractApiController
     {
         $user = $this->security->getUser(); // null or UserInterface, if logged in
         if (!$user) {
-            return $this->respond('Couldn\' locate the user', [], 400);
+            return $this->respond('Couldn\'t locate the user', [], 400);
         }
 
         $posts = $postRepository->findByFollowingUsers($user->getFollowing());
@@ -96,7 +98,7 @@ class UserController extends AbstractApiController
     {
         $user = $this->security->getUser(); // null or UserInterface, if logged in
         if (!$user) {
-            return $this->respond('Couldn\' locate the user', [], 400);
+            return $this->respond('Couldn\'t locate the user', [], 400);
         }
         if ($user === $follow_user){
             return $this->respond('Invalid user id given', [], 400);
@@ -106,6 +108,92 @@ class UserController extends AbstractApiController
 
         $entityManager = $doctrine->getManager();
         $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $this->respond('success');
+    }
+
+    /**
+     * @Route("/add-friend/{id}", name="add-friend", methods={"POST"})
+     * @OA\Tag(name="user")
+     */
+    public function addFriend(User $add_friend, ManagerRegistry $doctrine): Response
+    {
+        $user = $this->security->getUser(); // null or UserInterface, if logged in
+        if (!$user) {
+            return $this->respond('Couldn\'t locate the user', [], 400);
+        }
+        if ($user === $add_friend){
+            return $this->respond('Invalid user id given', [], 400);
+        }
+
+        $friend = new Friend();
+        $friend->setUser($user);
+        $friend->setFriendUser($add_friend);
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->persist($friend);
+        $entityManager->flush();
+
+        return $this->respond('success');
+    }
+
+    /**
+     * @Route("/friend-requests", name="friend-requests", methods={"GET"})
+     * @OA\Tag(name="user")
+     */
+    public function friendRequests(FriendRepository $friendRepository, SerializerInterface $serializer): Response
+    {
+        $user = $this->security->getUser(); // null or UserInterface, if logged in
+        if (!$user) {
+            return $this->respond('Couldn\'t locate the user', [], 400);
+        }
+
+        $friend_requests = $friendRepository->getFriendRequests($user);
+        $friend_requests = $serializer->serialize($friend_requests, 'json', ['groups' => ['normal', 'friend-requests']]);
+
+        return $this->respond('success', json_decode($friend_requests));
+    }
+
+    /**
+     * @Route("/accept-friend-request/{id}", name="accept-friend-request", methods={"POST"})
+     * @OA\Tag(name="user")
+     */
+    public function acceptFriendRequest(Friend $friend_request, ManagerRegistry $doctrine): Response
+    {
+        $user = $this->security->getUser(); // null or UserInterface, if logged in
+        if (!$user) {
+            return $this->respond('Couldn\'t locate the user', [], 400);
+        }
+        if ($user !== $friend_request->getFriendUser()){
+            return $this->respond('Invalid request id given', [], 400);
+        }
+
+        $friend_request->setAccepted(true);
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->persist($friend_request);
+        $entityManager->flush();
+
+        return $this->respond('success');
+    }
+
+    /**
+     * @Route("/reject-friend-request/{id}", name="reject-friend-request", methods={"POST"})
+     * @OA\Tag(name="user")
+     */
+    public function rejectFriendRequest(Friend $friend_request, ManagerRegistry $doctrine): Response
+    {
+        $user = $this->security->getUser(); // null or UserInterface, if logged in
+        if (!$user) {
+            return $this->respond('Couldn\'t locate the user', [], 400);
+        }
+        if ($user !== $friend_request->getFriendUser() || $friend_request->isAccepted()){
+            return $this->respond('Invalid request id given', [], 400);
+        }
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->remove($friend_request);
         $entityManager->flush();
 
         return $this->respond('success');

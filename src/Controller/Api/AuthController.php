@@ -54,9 +54,13 @@ class AuthController extends AbstractController
     {
         $password = $request->get('password');
         $email = $request->get('email');
+        $first_name = $request->get('first_name');
+        $last_name = $request->get('last_name');
         $user = new User();
         $user->setPassword($encoder->encodePassword($user, $password));
         $user->setEmail($email);
+        $user->setFirstName($first_name);
+        $user->setLastName($last_name);
         $em = $this->getDoctrine()->getManager();
         $em->persist($user);
         $em->flush();

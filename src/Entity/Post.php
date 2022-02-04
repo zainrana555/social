@@ -10,17 +10,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=PostRepository::class)
  */
-class Post
+class Post extends ParentEntity
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     *
-     * @Groups({"normal", "admin"})
-     */
-    private int $id;
-
     /**
      * @ORM\Column(type="text")
      *
@@ -41,14 +32,6 @@ class Post
      * @Groups({"normal", "admin"})
      */
     private Collection $images;
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     /**
      * @return string|null
