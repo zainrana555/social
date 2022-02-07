@@ -25,6 +25,7 @@ class UserResponseDtoTransformer extends AbstractResponseDtoTransformer
         $dto->first_name = $user->getFirstName();
         $dto->last_name = $user->getLastName();
         $dto->email = $user->getEmail();
+        $dto->dp = $user->getDp();
 
         return $dto;
     }

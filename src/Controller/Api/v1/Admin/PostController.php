@@ -33,6 +33,9 @@ class PostController extends AbstractApiController
      */
     public function index(ManagerRegistry $doctrine, SerializerInterface $serializer): Response
     {
+        // check for "view" access: calls all voters
+        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
+
         $posts = $doctrine->getRepository(Post::class)->findAll();
         $posts = $serializer->serialize($posts, 'json', ['groups' => ['admin']]);
 

@@ -34,6 +34,11 @@ class Post extends ParentEntity
     private Collection $images;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    private bool $public = false;
+
+    /**
      * @return string|null
      */
     public function getMessage(): ?string
@@ -105,6 +110,25 @@ class Post extends ParentEntity
                 $image->setPost(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getPublic(): ?bool
+    {
+        return $this->public;
+    }
+
+    /**
+     * @param bool $public
+     * @return $this
+     */
+    public function setPublic(bool $public): self
+    {
+        $this->public = $public;
 
         return $this;
     }

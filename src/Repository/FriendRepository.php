@@ -40,6 +40,24 @@ class FriendRepository extends ServiceEntityRepository
         ;
     }
 
+//    /**
+//     * @param User $user
+//     * @return Friend[] Returns an array of Friend objects
+//     */
+//    public function getUserFriends(User $user)
+//    {
+//        return $this->createQueryBuilder('f')
+//            ->andWhere('f.friendUser = :user')
+//            ->orWhere('f.user = :user')
+//            ->andWhere('f.accepted = true')
+//            ->setParameter('user', $user)
+//            ->orderBy('f.id', 'ASC')
+////            ->setMaxResults(10)
+//            ->getQuery()
+//            ->getResult()
+//            ;
+//    }
+
     /*
     public function findOneBySomeField($value): ?Friend
     {

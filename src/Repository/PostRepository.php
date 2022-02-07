@@ -28,6 +28,7 @@ class PostRepository extends ServiceEntityRepository
     public function findByFollowingUsers($users)
     {
         return $this->createQueryBuilder('p')
+//            ->andWhere('p.public = true')
             ->andWhere('p.user IN (:users)')
             ->setParameter('users', $users)
             ->orderBy('p.id', 'ASC')
@@ -35,6 +36,21 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    /**
+     * @return Post[] Returns an array of Post objects
+     */
+    public function findByFriendUsers($users)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.user IN (:users)')
+            ->setParameter('users', $users)
+            ->orderBy('p.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+            ;
     }
 
     /*

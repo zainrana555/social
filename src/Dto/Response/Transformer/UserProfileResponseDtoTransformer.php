@@ -7,15 +7,18 @@ namespace App\Dto\Response\Transformer;
 use App\Dto\Exception\UnexpectedTypeException;
 use App\Dto\Response\UserProfileResponseDto;
 use App\Entity\User;
+use App\Repository\UserRepository;
 
 class UserProfileResponseDtoTransformer extends AbstractResponseDtoTransformer
 {
     private UserResponseDtoTransformer $userResponseDtoTransformer;
     private PostResponseDtoTransformer $postResponseDtoTransformer;
+    private UserRepository $userRepository;
 
-    public function __construct(UserResponseDtoTransformer $userResponseDtoTransformer, PostResponseDtoTransformer $postResponseDtoTransformer) {
+    public function __construct(UserResponseDtoTransformer $userResponseDtoTransformer, PostResponseDtoTransformer $postResponseDtoTransformer, UserRepository $userRepository) {
         $this->userResponseDtoTransformer = $userResponseDtoTransformer;
         $this->postResponseDtoTransformer = $postResponseDtoTransformer;
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -33,8 +36,8 @@ class UserProfileResponseDtoTransformer extends AbstractResponseDtoTransformer
         $dto->first_name = $user->getFirstName();
         $dto->last_name = $user->getLastName();
         $dto->email = $user->getEmail();
-//        $dto->friendsTotalCount = $user->getFriends()->count();
-//        $dto->friends = $this->userResponseDtoTransformer->transformFromObjects($user->getFriends());
+        $dto->friendsTotalCount = count($this->userRepository->getUserFriends($user));
+        $dto->friends = $this->userResponseDtoTransformer->transformFromObjects($this->userRepository->getUserFriends($user));
         $dto->followingTotalCount = $user->getFollowing()->count();
         $dto->following = $this->userResponseDtoTransformer->transformFromObjects($user->getFollowing());
         $dto->followersTotalCount = $user->getFollowers()->count();
